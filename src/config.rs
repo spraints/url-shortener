@@ -8,7 +8,7 @@ pub struct Config {
     pub urls: Vec<RedirectRule>,
 }
 
-#[derive(Deserialize, Debug)]
+#[derive(Deserialize, Debug, Clone)]
 pub struct RedirectRule {
     pub short: String,
     #[serde(deserialize_with = "deserialize_uri")]
