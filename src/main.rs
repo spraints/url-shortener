@@ -10,22 +10,36 @@ use clap::Parser;
 use config::{Config, RedirectRule};
 use http::StatusCode;
 use tokio::sync::RwLock;
+use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
+use tracing::{info, Level};
 
 mod cli;
 mod config;
 
 #[tokio::main]
 async fn main() {
-    let cli::Cli { addr, config } = cli::Cli::parse();
+    let cli::Cli {
+        addr,
+        config,
+        log_level,
+    } = cli::Cli::parse();
+
+    tracing_subscriber::fmt().with_max_level(log_level).init();
+
     let f = fs::File::open(&config).unwrap();
     let config: Config = serde_yaml::from_reader(&f).unwrap();
     let config = RwLock::new(config);
 
     let state = Arc::new(AppState { config });
 
-    println!("listening on {addr}");
+    info!("listening on {addr}");
     let app = Router::new()
         .route("/{shortened}", get(redirect))
+        .layer(
+            TraceLayer::new_for_http()
+                .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
+                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+        )
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
