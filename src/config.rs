@@ -6,6 +6,13 @@ use serde::{Deserialize, Deserializer};
 #[derive(Deserialize, Debug)]
 pub struct Config {
     pub urls: Vec<RedirectRule>,
+    pub hosts: Vec<HostRedirectRules>,
+}
+
+#[derive(Deserialize, Debug)]
+pub struct HostRedirectRules {
+    pub name: String,
+    pub urls: Vec<RedirectRule>,
 }
 
 #[derive(Deserialize, Debug, Clone)]

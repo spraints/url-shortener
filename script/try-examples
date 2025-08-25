@@ -12,3 +12,10 @@ ex "Expect a redirect for global short url" \
   -i http://127.0.0.1:3000/abc
 ex "Expect no redirect for missing short url" \
   -i http://127.0.0.1:3000/foo
+
+ex "Expect no redirect for global request to host-specific url" \
+  -i http://127.0.0.1:3000/host-specific
+ex "Expect redirect for correct host for host-specific url" \
+  -i -H "Host: example-host" http://127.0.0.1:3000/host-specific
+ex "Expect no redirect for incorrect host for host-specific url" \
+  -i -H "Host: wrong-host" http://127.0.0.1:3000/host-specific

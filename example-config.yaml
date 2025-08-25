@@ -3,3 +3,9 @@ urls:
     long: https://google.com
   #- short: foo
   #  long: https://pickardayune.com
+
+hosts:
+  - name: "example-host"
+    urls:
+      - short: host-specific
+        long: https://duckduckgo.com

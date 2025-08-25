@@ -6,12 +6,14 @@ use axum::{
     routing::get,
     Router,
 };
+use axum_ext::extract::Host;
 use clap::Parser;
 use http::StatusCode;
 use state::AppState;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 
+mod axum_ext;
 mod cli;
 mod config;
 mod config_loader;
@@ -44,8 +46,12 @@ async fn main() {
     axum::serve(listener, app).await.unwrap();
 }
 
-async fn redirect(Path(shortened): Path<String>, State(config): State<Arc<AppState>>) -> Response {
-    match config.get(&shortened).await {
+async fn redirect(
+    Path(shortened): Path<String>,
+    Host(host): Host,
+    State(config): State<Arc<AppState>>,
+) -> Response {
+    match config.get(&host, &shortened).await {
         None => StatusCode::NOT_FOUND.into_response(),
         Some(rule) => {
             let uri: String = rule.long.to_string();
