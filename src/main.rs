@@ -38,7 +38,11 @@ async fn main() {
         .layer(
             TraceLayer::new_for_http()
                 .make_span_with(DefaultMakeSpan::new().level(Level::INFO))
-                .on_response(DefaultOnResponse::new().level(Level::INFO)),
+                .on_response(
+                    DefaultOnResponse::new()
+                        .level(Level::INFO)
+                        .include_headers(true),
+                ),
         )
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
