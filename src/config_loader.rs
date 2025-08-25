@@ -44,7 +44,7 @@ where
 
 async fn load_config(state: &AppState, config_path: &PathBuf) {
     info!("reloading config from {config_path:?}");
-    if let Err(e) = try_load_config(&state, config_path).await {
+    if let Err(e) = try_load_config(state, config_path).await {
         error!("error loading config from {config_path:?}: {e}");
     }
 }

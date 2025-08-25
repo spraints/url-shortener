@@ -1,4 +1,4 @@
-use std::{fs, sync::Arc};
+use std::sync::Arc;
 
 use axum::{
     extract::{Path, State},
@@ -31,7 +31,8 @@ async fn main() {
 
     let state = Arc::new(AppState::new());
 
-    let w = config_loader::watch(state.clone(), &config).unwrap();
+    // This needs to be assigned so that the watcher doesn't get dropped.
+    let _w = config_loader::watch(state.clone(), &config).unwrap();
 
     info!("listening on {addr}");
     let app = Router::new()

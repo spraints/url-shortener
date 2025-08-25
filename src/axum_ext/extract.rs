@@ -14,7 +14,7 @@ where
     type Rejection = HostRejection;
 
     #[doc = " Perform the extraction."]
-    async fn from_request_parts(parts: &mut Parts, state: &S) -> Result<Self, Self::Rejection> {
+    async fn from_request_parts(parts: &mut Parts, _state: &S) -> Result<Self, Self::Rejection> {
         if let Some(host) = parse_forwarded(&parts.headers) {
             return Ok(Host(host.to_owned()));
         }
@@ -48,7 +48,7 @@ fn parse_forwarded(headers: &HeaderMap) -> Option<&str> {
     let forwarded_values = headers.get(FORWARDED)?.to_str().ok()?;
 
     // get the first set of values
-    let first_value = forwarded_values.split(',').nth(0)?;
+    let first_value = forwarded_values.split(',').next()?;
 
     // find the value of the `host` field
     first_value.split(';').find_map(|pair| {
