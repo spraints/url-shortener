@@ -14,6 +14,7 @@ use tracing::{info, Level};
 
 mod cli;
 mod config;
+mod config_loader;
 mod state;
 
 #[tokio::main]
@@ -26,10 +27,9 @@ async fn main() {
 
     tracing_subscriber::fmt().with_max_level(log_level).init();
 
-    let f = fs::File::open(&config).unwrap();
-    let config = serde_yaml::from_reader(&f).unwrap();
+    let state = Arc::new(AppState::new());
 
-    let state = Arc::new(AppState::new(config));
+    let w = config_loader::watch(state.clone(), &config).unwrap();
 
     info!("listening on {addr}");
     let app = Router::new()
