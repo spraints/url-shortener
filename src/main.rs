@@ -7,14 +7,14 @@ use axum::{
     Router,
 };
 use clap::Parser;
-use config::{Config, RedirectRule};
 use http::StatusCode;
-use tokio::sync::RwLock;
+use state::AppState;
 use tower_http::trace::{DefaultMakeSpan, DefaultOnResponse, TraceLayer};
 use tracing::{info, Level};
 
 mod cli;
 mod config;
+mod state;
 
 #[tokio::main]
 async fn main() {
@@ -27,10 +27,9 @@ async fn main() {
     tracing_subscriber::fmt().with_max_level(log_level).init();
 
     let f = fs::File::open(&config).unwrap();
-    let config: Config = serde_yaml::from_reader(&f).unwrap();
-    let config = RwLock::new(config);
+    let config = serde_yaml::from_reader(&f).unwrap();
 
-    let state = Arc::new(AppState { config });
+    let state = Arc::new(AppState::new(config));
 
     info!("listening on {addr}");
     let app = Router::new()
@@ -43,22 +42,6 @@ async fn main() {
         .with_state(state);
     let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
     axum::serve(listener, app).await.unwrap();
-}
-
-struct AppState {
-    config: RwLock<Config>,
-}
-
-impl AppState {
-    async fn get(&self, shortened: &str) -> Option<RedirectRule> {
-        let cfg = self.config.read().await;
-        for r in &cfg.urls {
-            if r.short == shortened {
-                return Some(r.clone());
-            }
-        }
-        None
-    }
 }
 
 async fn redirect(Path(shortened): Path<String>, State(config): State<Arc<AppState>>) -> Response {
