@@ -1,0 +1,14 @@
+#!/bin/bash
+# 1. Run cargo run -- --config example-config.yaml
+# 2. Run this script.
+
+ex() {
+  local label="$1"; shift
+  printf '****************\n* %s\n' "$label"
+  (set -x; curl "$@")
+}
+
+ex "Expect a redirect for global short url" \
+  -i http://127.0.0.1:3000/abc
+ex "Expect no redirect for missing short url" \
+  -i http://127.0.0.1:3000/foo
